@@ -1,0 +1,28 @@
+# Local secrets and notes
+.env
+.env.*
+!.env.example
+**/appsettings.Local.json
+**/appsettings.*.local.json
+Info.rtf
+
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+TestResults/
+coverage/
+
+# Node
+**/node_modules/
+**/dist/
+Frontend/dist-pages/
+**/.vite/
+**/coverage/
+*.tsbuildinfo
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/

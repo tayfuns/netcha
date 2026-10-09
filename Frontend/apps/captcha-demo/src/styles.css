@@ -1,0 +1,35 @@
+body { background: radial-gradient(circle at 10% 10%, #e0f2e7 0, transparent 32%), #f6f8f5; }
+.demo-header { max-width: 1180px; margin: auto; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+.brand { display: flex; gap: .65rem; align-items: center; text-decoration: none; font-size: 1.1rem; font-weight: 800; }
+.brand-mark { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .6rem; color: white; background: var(--brand); }
+.privacy-pill { background: white; border: 1px solid var(--line); border-radius: 99px; padding: .45rem .8rem; color: var(--muted); font-size: .8rem; }
+.demo-layout { min-height: calc(100vh - 155px); max-width: 1180px; margin: auto; padding: 4rem 2rem 5rem; display: grid; grid-template-columns: 1fr minmax(360px, 500px); align-items: center; gap: clamp(3rem, 8vw, 8rem); }
+.intro { max-width: 600px; }
+.eyebrow, .step { margin: 0 0 .7rem; color: var(--brand); font-size: .78rem; font-weight: 800; letter-spacing: .12em; }
+h1 { margin: 0; font-size: clamp(2.7rem, 6vw, 5rem); line-height: 1.02; letter-spacing: -.055em; }
+.lead { color: var(--muted); font-size: 1.12rem; line-height: 1.75; max-width: 55ch; }
+.benefits { display: grid; gap: 1rem; list-style: none; padding: 1rem 0 0; }
+.benefits li { display: flex; align-items: start; gap: .85rem; }
+.benefits li > span { display: grid; place-items: center; flex: 0 0 1.75rem; height: 1.75rem; border-radius: 50%; color: var(--brand-dark); background: var(--brand-soft); font-weight: 900; }
+.benefits div { display: grid; gap: .2rem; }
+.benefits small { color: var(--muted); }
+.form-card { padding: clamp(1.4rem, 3vw, 2.2rem); }
+.form-card h2 { margin: 0 0 .4rem; font-size: 1.7rem; }
+form { display: grid; gap: 1.15rem; margin-top: 1.5rem; }
+.captcha-box { min-height: 64px; display: grid; align-items: center; padding: .35rem; border: 1px dashed #b8ccc0; border-radius: .75rem; overflow: hidden; }
+altcha-widget { --altcha-max-width: 100%; }
+.netcha-challenge { display: grid; }
+.netcha-challenge-brand { display: flex; justify-content: flex-end; align-items: center; gap: .35rem; padding: .25rem .7rem .15rem; color: var(--muted); font-size: .72rem; }
+.netcha-challenge-brand span { display: inline-grid; place-items: center; width: 1.05rem; height: 1.05rem; border-radius: .3rem; color: white; background: var(--brand); font-size: .62rem; font-weight: 900; }
+.submit { width: 100%; }
+footer { text-align: center; padding: 1.5rem; color: var(--muted); font-size: .8rem; }
+@media (max-width: 820px) {
+  .demo-layout { grid-template-columns: 1fr; padding-top: 2rem; gap: 2.5rem; }
+  .intro { max-width: none; }
+}
+@media (max-width: 480px) {
+  .demo-header { padding: 1rem; }
+  .privacy-pill { display: none; }
+  .demo-layout { padding: 1.5rem 1rem 3rem; }
+  h1 { font-size: 2.65rem; }
+}

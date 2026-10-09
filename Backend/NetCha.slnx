@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/NetCha.Api/NetCha.Api.csproj" />
+  <Project Path="tests/NetCha.Api.Tests/NetCha.Api.Tests.csproj" />
+</Solution>
