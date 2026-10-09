@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using NetCha.Api.Admin;
 using NetCha.Api.Captcha;
 
 namespace NetCha.Api.Tests;
@@ -44,12 +45,33 @@ public sealed class ApiIntegrationTests(NetChaFactory factory) : IClassFixture<N
     }
 
     [Fact]
-    public async Task Admin_endpoint_requires_api_key()
+    public async Task Admin_endpoint_requires_database_session()
     {
         using var client = factory.CreateHttpsClient();
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/v1/admin/stats")).StatusCode);
-        client.DefaultRequestHeaders.Add("X-Admin-Key", "integration-test-admin-key-with-32-bytes");
+        var login = await client.PostAsJsonAsync("/api/v1/admin/auth/login", new { username = "admin", password = "integration-test-admin-key-with-32-bytes" });
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        var session = await login.Content.ReadFromJsonAsync<AdminLoginResponse>();
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", session?.Token);
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/v1/admin/stats")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Admin_can_change_password_and_old_sessions_are_revoked()
+    {
+        await using var isolatedFactory = new NetChaFactory();
+        using var client = isolatedFactory.CreateHttpsClient();
+        var login = await client.PostAsJsonAsync("/api/v1/admin/auth/login", new { username = "admin", password = "integration-test-admin-key-with-32-bytes" });
+        var session = await login.Content.ReadFromJsonAsync<AdminLoginResponse>();
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", session?.Token);
+
+        var change = await client.PostAsJsonAsync("/api/v1/admin/auth/change-password", new { currentPassword = "integration-test-admin-key-with-32-bytes", newPassword = "a-new-secure-admin-password" });
+
+        Assert.Equal(HttpStatusCode.NoContent, change.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/v1/admin/stats")).StatusCode);
+        client.DefaultRequestHeaders.Authorization = null;
+        var relogin = await client.PostAsJsonAsync("/api/v1/admin/auth/login", new { username = "admin", password = "a-new-secure-admin-password" });
+        Assert.Equal(HttpStatusCode.OK, relogin.StatusCode);
     }
 }
 

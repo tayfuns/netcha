@@ -22,7 +22,16 @@ Challenge and verify calls are limited per client IP. `ForwardedHeaders` support
 
 ## Admin API
 
-Set `Admin__ApiKey`, then send it in `X-Admin-Key`. If the key is absent, admin routes return 503.
+On the first database migration, `Admin__ApiKey` bootstraps the `admin` user's
+password hash. Log in with `POST /api/v1/admin/auth/login`, then send the returned
+opaque token as `Authorization: Bearer <token>`. Change the password in the admin
+panel and remove `Admin__ApiKey` from the server configuration. Passwords and
+session tokens are never stored in plaintext.
+
+- `POST /api/v1/admin/auth/login`
+- `GET /api/v1/admin/auth/me`
+- `POST /api/v1/admin/auth/change-password`
+- `POST /api/v1/admin/auth/logout`
 
 - `GET /api/v1/admin/stats`
 - `GET /api/v1/admin/audit?limit=100` (maximum 500)

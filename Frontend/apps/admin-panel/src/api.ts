@@ -5,7 +5,7 @@ const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5080').replac
 const client = createApiClient(
   API_URL,
   () => sessionStorage.getItem(TOKEN_KEY),
-  { header: 'X-Admin-Key', prefix: '' },
+  { header: 'Authorization', prefix: 'Bearer ' },
 );
 
 const paths = {
@@ -43,7 +43,35 @@ export interface Settings {
   expiresInSeconds: number;
 }
 
+export interface AdminUser {
+  id: number;
+  username: string;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
+export interface LoginResponse {
+  token: string;
+  expiresAt: string;
+  user: AdminUser;
+}
+
 export const adminApi = {
+  login: async (username: string, password: string): Promise<LoginResponse> => {
+    const response = await fetch(`${API_URL}/api/v1/admin/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    if (!response.ok) throw new ApiError(response.status === 401 ? 'Kullanıcı adı veya parola hatalı.' : 'Giriş yapılamadı.', response.status);
+    return response.json() as Promise<LoginResponse>;
+  },
+  logout: () => client.request<void>('/api/v1/admin/auth/logout', { method: 'POST' }),
+  me: () => client.request<AdminUser>('/api/v1/admin/auth/me'),
+  changePassword: (currentPassword: string, newPassword: string) => client.request<void>('/api/v1/admin/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  }),
   health: async (): Promise<HealthStatus> => {
     let response: Response;
     try { response = await fetch(`${API_URL}${paths.health}`); }

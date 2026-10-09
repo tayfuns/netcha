@@ -11,4 +11,9 @@
     <PackageReference Include="Npgsql" Version="10.0.3" />
     <PackageReference Include="StackExchange.Redis" Version="2.10.1" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
+    <Content Include="../../deploy/iis/INSTALL-IIS.md" Link="INSTALL-IIS.md" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../../deploy/iis/appsettings.Production.example.json" Link="appsettings.Production.example.json" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

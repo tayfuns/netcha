@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { formatDate } from '@netcha/shared';
-import { adminApi, AuditEntry } from './api';
+import { adminApi, AuditEntry, TOKEN_KEY } from './api';
 import { Empty, ErrorState, Loading, StatusDot } from './components';
 
 type AsyncState<T> = { data?: T; loading: boolean; error?: string };
@@ -61,4 +61,27 @@ export function SettingsPage() {
   if (loading) return <Loading />;
   if (error || !data) return <ErrorState message={error || 'Ayarlar alınamadı.'} onRetry={reload} />;
   return <><div className="page-heading"><div><p className="eyebrow">YAPILANDIRMA</p><h1>Ayarlar</h1><p>Backend tarafından kullanılan challenge güvenlik ayarları.</p></div><button className="button secondary" onClick={reload}>Yenile</button></div><section className="settings-form card"><div className="settings-grid"><div><p className="hint">Maksimum sayı</p><strong className="setting-value">{data.maxNumber.toLocaleString('tr-TR')}</strong><p className="hint">Proof-of-work hesaplama üst sınırı.</p></div><div><p className="hint">Challenge süresi</p><strong className="setting-value">{data.expiresInSeconds} saniye</strong><p className="hint">Üretilen challenge'ın geçerli kalacağı süre.</p></div></div><div className="status warning">Ayarlar sunucu yapılandırmasından okunur. Değişiklikler backend ortam değişkenleri üzerinden uygulanır.</div></section></>;
+}
+
+export function Account() {
+  const user = useLoad(adminApi.me);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmation, setConfirmation] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  if (user.loading) return <Loading />;
+  if (user.error || !user.data) return <ErrorState message={user.error || 'Hesap bilgileri alınamadı.'} onRetry={user.reload} />;
+  async function submit(event: FormEvent) {
+    event.preventDefault(); setMessage(''); setError('');
+    if (newPassword.length < 12) { setError('Yeni parola en az 12 karakter olmalıdır.'); return; }
+    if (newPassword !== confirmation) { setError('Yeni parola tekrarı eşleşmiyor.'); return; }
+    try {
+      await adminApi.changePassword(currentPassword, newPassword);
+      sessionStorage.removeItem(TOKEN_KEY);
+      setMessage('Parolanız değiştirildi. Güvenlik için yeniden giriş yapmalısınız.');
+      window.setTimeout(() => window.location.reload(), 1500);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : 'Parola değiştirilemedi.'); }
+  }
+  return <><div className="page-heading"><div><p className="eyebrow">GÜVENLİK</p><h1>Hesap güvenliği</h1><p>Yönetici parolasını veritabanında güvenli biçimde yönetin.</p></div></div><section className="settings-form card"><p><strong>Kullanıcı:</strong> {user.data.username}</p><p className="hint">Son giriş: {formatDate(user.data.lastLoginAt)}</p>{error && <div className="status error" role="alert">{error}</div>}{message && <div className="status success" role="status">{message}</div>}<form onSubmit={submit}><label>Mevcut parola<input className="input" type="password" autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} required /></label><label>Yeni parola<input className="input" type="password" autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} minLength={12} required /></label><label>Yeni parola tekrar<input className="input" type="password" autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} minLength={12} required /></label><button className="button">Parolayı değiştir</button></form></section></>;
 }

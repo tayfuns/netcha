@@ -20,7 +20,8 @@ builder.Services.AddSingleton<ICaptchaSecret, CaptchaSecret>();
 builder.Services.AddSingleton<IAltchaService, AltchaService>();
 builder.Services.AddSingleton<MemoryReplayStore>();
 builder.Services.AddSingleton<MemoryAuditRepository>();
-builder.Services.AddScoped<AdminApiKeyFilter>();
+builder.Services.AddSingleton<MemoryAdminAuthStore>();
+builder.Services.AddScoped<AdminSessionFilter>();
 
 var redisConnection = builder.Configuration[$"{RedisOptions.SectionName}:ConnectionString"];
 if (!string.IsNullOrWhiteSpace(redisConnection))
@@ -45,11 +46,13 @@ if (!string.IsNullOrWhiteSpace(postgresConnection))
     builder.Services.AddSingleton(NpgsqlDataSource.Create(postgresConnection));
     builder.Services.AddSingleton<PostgresAuditRepository>();
     builder.Services.AddSingleton<IAuditRepository, ResilientAuditRepository>();
+    builder.Services.AddSingleton<IAdminAuthStore, PostgresAdminAuthStore>();
     builder.Services.AddHostedService<PostgresInitializer>();
 }
 else
 {
     builder.Services.AddSingleton<IAuditRepository>(sp => sp.GetRequiredService<MemoryAuditRepository>());
+    builder.Services.AddSingleton<IAdminAuthStore>(sp => sp.GetRequiredService<MemoryAdminAuthStore>());
 }
 
 builder.Services.AddOpenApi();
@@ -72,6 +75,9 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("verify", context => RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    options.AddPolicy("admin-login", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(5), QueueLimit = 0 }));
 });
 
 var app = builder.Build();

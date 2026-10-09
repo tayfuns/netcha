@@ -34,6 +34,8 @@ public sealed class AdminOptions
 {
     public const string SectionName = "Admin";
     public string? ApiKey { get; set; }
+    [Range(1, 168)]
+    public int SessionHours { get; set; } = 8;
 }
 
 public sealed record EffectiveCaptchaSettings(int MaxNumber, int ExpiresInSeconds);

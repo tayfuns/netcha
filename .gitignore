@@ -13,6 +13,7 @@ Info.rtf
 *.suo
 TestResults/
 coverage/
+Backend/artifacts/
 
 # Node
 **/node_modules/
